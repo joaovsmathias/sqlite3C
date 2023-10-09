@@ -33,6 +33,7 @@ sqlite3 *db;
 char *err_msg = 0;
 int rc;
 int first_id;
+int last_id;
 struct Record dado;
 struct Ssu_protocol ssu_dados;
 
@@ -149,7 +150,16 @@ int callback_first_id(void *NotUsed, int argc, char **argv,
     
     NotUsed = 0;
     first_id = atoi(argv[0]);
-    printf("%d\n",first_id);
+    //printf("%d\n",first_id);
+    return 0;
+}
+
+int callback_last_id(void *NotUsed, int argc, char **argv, 
+                    char **azColName) {
+    
+    NotUsed = 0;
+    last_id = atoi(argv[0]);
+    //printf("%d\n",first_id);
     return 0;
 }
 
@@ -167,8 +177,9 @@ int find_id_callback(void *NotUsed, int argc, char **argv,
 }
 
 int get_last_id_sqlite(void){
-    int last_id = sqlite3_last_insert_rowid(db);
-    return last_id;
+    char *sql = "SELECT * FROM Offline_Storage order by Id DESC limit 1";
+        
+    rc = sqlite3_exec(db, sql, callback_last_id, 0, &err_msg);
 }
 
 
@@ -235,9 +246,13 @@ void printSSU(struct Ssu_protocol ssu_dados) {
 int main(void) {
     
     create_sqlite_connection();
-    //get_first_id_sqlite();
-    //delete_value_by_id(first_id);
-    get_value_by_id(1);
+    get_first_id_sqlite();
+    get_last_id_sqlite();
+    printf("First ID ==>%d\n",first_id);
+    printf("Last ID ==>%d\n",last_id);
+    //delete_value_by_id(13);
+
+    get_value_by_id(12);
     //popula_SSU();
     //insert_sqlite_data();
     ssu_dados = decode(dado.content);
